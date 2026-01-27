@@ -10,7 +10,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/', (req, res) => {
-  res.send('hello world');
+  res.send('Real Estate server is running');
 })
 
 const uri =
@@ -29,6 +29,34 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     await client.connect();
+    const db = client.db('RealEstateDB');
+    const propertyCollection = db.collection('properties');
+    const reviewCollection = db.collection('reviews');
+
+    app.get('/feature-properties', async (req, res) => {
+      const cursor = propertyCollection.find().sort({ createdAt: 1}).limit(6).project({image:1, propertyName:1, category:1, description:1, location:1, price:1});
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.get('/properties', async (req, res) => {
+      const cursor = propertyCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.get('/reviews', async (req, res) => {
+      const cursor = propertyCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    })
+
+    app.post('/properties', async (req, res) => {
+      const newProperty = req.body;
+      const result = await propertyCollection.insertOne(newProperty);
+      res.send(result);
+    })
+
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
     console.log(
