@@ -40,9 +40,27 @@ async function run() {
     })
 
     app.get('/properties', async (req, res) => {
-      const cursor = propertyCollection.find();
+      // console.log(req.query);
+      const { limit = 0, skip = 0, sort = 'price', order = 'desc', search = '' } = req.query;
+
+
+
+      const cursor = propertyCollection
+        .find()
+        .limit(Number(limit))
+        .skip(Number(skip))
+        .project({
+          image: 1,
+          propertyName: 1,
+          category: 1,
+          userName:1,
+          location: 1,
+          price: 1,
+        });
+      
+      const count = await propertyCollection.countDocuments();
       const result = await cursor.toArray();
-      res.send(result);
+      res.send({result, total:count});
     })
 
     app.get('/reviews', async (req, res) => {
