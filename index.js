@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cors = require('cors');
 const port = process.env.PORT || 3000;
 
@@ -41,26 +41,59 @@ async function run() {
 
     app.get('/properties', async (req, res) => {
       // console.log(req.query);
-      const { limit = 0, skip = 0, sort = 'price', order = 'desc', search = '' } = req.query;
+      const {
+        limit = 0,
+        skip = 0,
+        sort = "price",
+        order = "asc",
+        search = "",
+      } = req.query;
+      const email = req.query.email;
+      // console.log('email is ', email);
+      const query = {};
 
+      if (email) query.userEmail = email;
 
+      const sortOption = {};
+      sortOption[sort || "price"] = order === "asc" ? 1 : -1;
+      // console.log(sortOption);
 
+      if (search) {
+        query.$or = [
+          {location: {$regex: search, $options:'i'}},
+          {propertyName: {$regex: search, $options:'i'}},
+          {category: {$regex: search, $options:'i'}}
+        ]
+      }
+      /**
+       * 
+  if (search) {
+    query.$or = [
+      { location: { $regex: search, $options: 'i' } },
+      { propertyName: { $regex: search, $options: 'i' } },
+      { category: { $regex: search, $options: 'i' } }
+    ];
+  }
+       */
       const cursor = propertyCollection
-        .find()
+        .find(query)
+        .sort(sortOption)
         .limit(Number(limit))
         .skip(Number(skip))
         .project({
           image: 1,
           propertyName: 1,
+          description:1,
           category: 1,
-          userName:1,
+          userName: 1,
           location: 1,
           price: 1,
+          createdAt:1,
         });
-      
-      const count = await propertyCollection.countDocuments();
+
+      const count = await propertyCollection.countDocuments(query);
       const result = await cursor.toArray();
-      res.send({result, total:count});
+      res.send({ result, total: count });
     })
 
     app.get('/reviews', async (req, res) => {
@@ -69,11 +102,28 @@ async function run() {
       res.send(result);
     })
 
-    app.post('/properties', async (req, res) => {
-      const newProperty = req.body;
+    app.post("/properties", async (req, res) => {
+      const newProperty = {
+        ...req.body,
+        createdAt: new Date(), 
+      };
+
       const result = await propertyCollection.insertOne(newProperty);
       res.send(result);
+    });
+
+    app.patch('/properties/:id', async (req, res) => {
+      const id = req.params.id;
+      console.log(id);
+      const updatedProperty = req.body;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: updatedProperty
+      };
+      const result = await propertyCollection.updateOne(query, update);
+      res.send(result);
     })
+
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
