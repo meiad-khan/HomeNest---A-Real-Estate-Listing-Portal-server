@@ -96,8 +96,17 @@ async function run() {
       res.send({ result, total: count });
     })
 
-    app.get('/reviews', async (req, res) => {
-      const cursor = propertyCollection.find();
+    app.get('/properties/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await propertyCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.get('/reviews/:propertyId', async (req, res) => {
+      const id = req.params.propertyId;
+      const query = { propertyId : id};
+      const cursor = reviewCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
     })
@@ -123,6 +132,13 @@ async function run() {
       const result = await propertyCollection.updateOne(query, update);
       res.send(result);
     })
+
+    app.delete("/properties/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await propertyCollection.deleteOne(query);
+      res.send(result);
+    });
 
 
     // Send a ping to confirm a successful connection
