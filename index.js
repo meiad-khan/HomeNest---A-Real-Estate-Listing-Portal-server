@@ -113,9 +113,6 @@ async function run() {
 
     app.get('/reviews', async (req, res) => {
       const email = req.query.email;
-      // console.log('email is ', email);
-      // const query = {};
-      // if()
       const result = await reviewCollection.find({ ownerEmail: email}).toArray();
       res.send(result);
     })
@@ -151,10 +148,10 @@ async function run() {
 
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
-    console.log(
-      "Pinged your deployment. You successfully connected to MongoDB!",
-    );
+    // await client.db("admin").command({ ping: 1 });
+    // console.log(
+    //   "Pinged your deployment. You successfully connected to MongoDB!",
+    // );
   } finally {
     // Ensures that the client will close when you finish/error
     // await client.close();
