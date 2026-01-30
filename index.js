@@ -111,6 +111,15 @@ async function run() {
       res.send(result);
     })
 
+    app.get('/reviews', async (req, res) => {
+      const email = req.query.email;
+      // console.log('email is ', email);
+      // const query = {};
+      // if()
+      const result = await reviewCollection.find({ ownerEmail: email}).toArray();
+      res.send(result);
+    })
+
     app.post("/properties", async (req, res) => {
       const newProperty = {
         ...req.body,
