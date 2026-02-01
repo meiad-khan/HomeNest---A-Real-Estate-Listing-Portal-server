@@ -28,13 +28,13 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
-    await client.connect();
+    // await client.connect();
     const db = client.db('RealEstateDB');
     const propertyCollection = db.collection('properties');
     const reviewCollection = db.collection('reviews');
 
     app.get('/feature-properties', async (req, res) => {
-      const cursor = propertyCollection.find().sort({ createdAt: 1}).limit(6).project({image:1, propertyName:1, category:1, description:1, location:1, price:1});
+      const cursor = propertyCollection.find().sort({ createdAt: -1}).limit(6).project({image:1, propertyName:1, category:1, description:1, location:1, price:1});
       const result = await cursor.toArray();
       res.send(result);
     })
